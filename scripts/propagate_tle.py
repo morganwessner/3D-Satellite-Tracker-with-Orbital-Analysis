@@ -46,7 +46,7 @@ class SatellitePropagator:
         end = start_time + timedelta(minutes=duration_minutes)
         
         while current <= end:
-            position, velocity = orbital.get_position(current, noramlize=False)
+            position, velocity = orbital.get_position(current, normalize=False)
             results.append({
                 "time": current,
                 "position": position,

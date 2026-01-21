@@ -1,4 +1,6 @@
 #script for visualization and backend (FastAPI)
+from dotenv import load_dotenv
+import os
 from fastapi import FastAPI
 from datetime import datetime, timezone
 from scripts.propagate_tle import SatellitePropagator
@@ -8,7 +10,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    alloworigins=["*"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
@@ -16,6 +18,16 @@ app.add_middleware(
 
 #initialize the satellite propagator with TLE data
 propagator = SatellitePropagator("scripts/data/tle_parsed/tle_data_parsed.json")
+
+#load environment variables
+load_dotenv()
+
+#read token from environment
+CESIUM_TOKEN = os.getenv("CESIUM_TOKEN")
+
+@app.get("/cesium-token")
+def get_token():
+    return {"token": CESIUM_TOKEN}
 
 #root endpoint to check API status
 @app.get("/")
@@ -30,6 +42,8 @@ def list_satellites():
 #endpoint to get current state (position and velocity) of satellite (contains bug)
 @app.get("/state/{norad_id}")
 def satellite_state(norad_id: str):
+    if norad_id not in propagator.orbitals:
+        return {"error": "Satellite with given ID not found"}
     now = datetime.now(timezone.utc)
     position, velocity = propagator.propagate(norad_id, now)
     

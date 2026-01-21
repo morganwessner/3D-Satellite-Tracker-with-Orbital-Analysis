@@ -1,0 +1,4 @@
+fastapi
+uvicorn
+pyorbital
+python-dotenv
